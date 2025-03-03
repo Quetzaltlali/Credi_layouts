@@ -345,4 +345,62 @@ RETURNS STRING AS (
   )
 );
 
+---- 12) cambios confianza
+CREATE OR REPLACE FUNCTION `CDC_DWH_BI_BEC.fn_cambios_confianza`(param_dependencia STRING, param_campos STRING) RETURNS STRING AS (
+  CONCAT("""
+    SELECT  
+      di.idcliente,
+      MAX(di.idcredito) AS idcredito,
+      'CAMBIO BAJA' AS TIPO,
+      'CB' AS MOV,
+      cr.FECHASISTEMA,
+      cr.PERIODO
+    FROM `RAW_DWH_BI.tblcreddictaminacion` di
+    INNER JOIN `CDC_DWH_BI.LAYOUT_COBRANZA_UNACH_CHIAPAS_CAMBIO_ALTA` cr
+      ON di.idcliente = cr.idcliente  
+    LEFT JOIN cfl-inf-ana-dev.RAW_ZELL.optCommonData AS cc3
+      ON di.idSolicitud = cc3.iReferenceId AND cc3.iDataId = 59
+    LEFT JOIN cfl-inf-ana-dev.RAW_ZELL.catDataOption AS cdo3
+      ON cc3.iDataId = cdo3.iDataId AND cc3.vValue = cdo3.vValue
+    WHERE di.idcredito <> cr.idcredito
+      AND cdo3.vLabel = 'CONFIANZA'
+      AND di.estatuscredito = 'ACTIVO'
+      AND di.saldoactual > 0
+    GROUP BY di.idcliente, cr.FECHASISTEMA, cr.PERIODO
+  """, param_campos,
+     `CDC_DWH_BI.fn_tabla_layout`(param_dependencia, 'baja'),
+     param_campos
+  )
+);
+
+---- 13) cambios_docente
+CREATE OR REPLACE FUNCTION `CDC_DWH_BI_BEC.fn_cambios_docente`(param_dependencia STRING, param_campos STRING) RETURNS STRING AS (
+  CONCAT("""
+    SELECT  
+      di.idcliente,
+      MAX(di.idcredito) AS idcredito,
+      'CAMBIO BAJA' AS TIPO,
+      'CB' AS MOV,
+      cr.FECHASISTEMA,
+      cr.PERIODO
+    FROM `RAW_DWH_BI.tblcreddictaminacion` di
+    INNER JOIN `CDC_DWH_BI.LAYOUT_COBRANZA_UNACH_CHIAPAS_CAMBIO_ALTA` cr
+      ON di.idcliente = cr.idcliente  
+    LEFT JOIN cfl-inf-ana-dev.RAW_ZELL.optCommonData AS cc3
+      ON di.idSolicitud = cc3.iReferenceId AND cc3.iDataId = 59
+    LEFT JOIN cfl-inf-ana-dev.RAW_ZELL.catDataOption AS cdo3
+      ON cc3.iDataId = cdo3.iDataId AND cc3.vValue = cdo3.vValue
+    WHERE di.idcredito <> cr.idcredito
+      AND cdo3.vLabel = 'DOCENTE'
+      AND di.estatuscredito = 'ACTIVO'
+      AND di.saldoactual > 0
+    GROUP BY di.idcliente, cr.FECHASISTEMA, cr.PERIODO
+  """, param_campos,
+     `CDC_DWH_BI.fn_tabla_layout`(param_dependencia, 'baja'),
+     param_campos
+  )
+);
+
+      ---- 14) 
+
 
